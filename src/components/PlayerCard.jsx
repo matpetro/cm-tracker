@@ -23,6 +23,7 @@ export default function PlayerCard({ player, onRelease }) {
   const { state, dispatch } = useApp()
   const [showModal, setShowModal] = useState(false)
   const [selectedTeam, setSelectedTeam] = useState(null)
+  const [imgError, setImgError] = useState(false);
 
   const isTaken = player.owners.length > 0
 
@@ -45,14 +46,23 @@ export default function PlayerCard({ player, onRelease }) {
       >
         {/* Avatar */}
         <div className="relative flex-shrink-0">
-          <div className={`w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-lg select-none ${avatarColor(player.name)}`}>
-            {initials(player.name)}
+          <div className={`w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-lg select-none ${imgError && avatarColor(player.name)}`}>
+            {player.photo && !imgError ? (
+              <img 
+                src={player.photo} 
+                alt={player.name} 
+                className="w-full h-full object-cover"
+                onError={() => setImgError(true)} 
+              />
+            ) : (
+              initials(player.name)
+            )}
           </div>
           {/* Flag */}
           <img
             src={player.flag}
             alt={player.nationality}
-            className="absolute bottom-0 right-0 w-6 h-5 rounded-sm border border-white object-cover"
+            className="absolute bottom-0 right-0 w-6 h-5 rounded-sm object-cover"
             onError={(e) => { e.target.style.display = 'none' }}
           />
         </div>
