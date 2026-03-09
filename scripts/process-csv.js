@@ -57,36 +57,48 @@ rl.on('line', (line) => {
 
   const id = get('ID')
   const name = get('Name')
-  const rawPhoto = get('Photo')
+  const rawFlag = get('Flag')
   const nationality = get('Nationality')
-  const flag = get('Flag')
   const club = get('Club')
-  const clubLogo = get('Club Logo')
+  const rawClubLogo = get('Club Logo');
   const overall = get('Overall')
   const position = get('Position')
 
   if (!id || !name) return
 
-  // Transform photo URL: cdn.sofifa.org/players/4/19/{id}.png
-  //                   -> cdn.sofifa.net/players/{id[0:3]}/{id[3:6]}/19_120.png
-  function transformPhoto(url, playerId) {
-    const match = url.match(/cdn\.sofifa\.org\/players\/\d+\/(\d+)\/\d+\.png/)
-    if (!match) return url
-    const year = match[1]
-    const paddedId = playerId.padStart(6, '0')
-    return `https://cdn.sofifa.net/players/${paddedId.slice(0, 3)}/${paddedId.slice(3)}/${year}_120.png`
+  // --- NEW TRANSFORMATION LOGIC ---
+  
+  // 1. Photo: Standardize to FIFA Index Player IDs
+  const photo = `https://fifastatic.fifaindex.com/FIFA19/images/players/5/${id}.png`;
+
+  // 2. Flag: Extract SoFIFA ID from URL and Map to FIFA Index
+  let finalFlag = rawFlag;
+  const flagMatch = rawFlag.match(/\/(\d+)\.png/);
+  if (flagMatch) {
+    const sofifaFlagId = flagMatch[1];
+    const targetFlagId =  sofifaFlagId;
+    finalFlag = `https://fifastatic.fifaindex.com/FIFA19/images/flags/2/${targetFlagId}.png`;
   }
 
-  const photo = transformPhoto(rawPhoto, id)
+  let finalClubLogo = rawClubLogo;
+  
+  // Extract the ID (e.g., 241) from the SoFIFA URL
+  const clubMatch = rawClubLogo.match(/\/(\d+)\.png/);
+  
+  if (clubMatch) {
+    const clubId = clubMatch[1];
+    // Reconstruct using the FIFA Index path
+    finalClubLogo = `https://fifastatic.fifaindex.com/FIFA19/images/crest/3/light/${clubId}.png`;
+  }
 
   players.push({
     id,
     name,
     photo,
     nationality,
-    flag,
+    flag: finalFlag,
     club,
-    clubLogo,
+    finalClubLogo,
     overall: parseInt(overall) || 0,
     position,
     owners: [],
